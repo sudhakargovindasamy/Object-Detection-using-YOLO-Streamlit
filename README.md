@@ -49,7 +49,7 @@ pip install -r requirements.txt
 
 1. **Clone this repository**
 ```bash
-git clone https://github.com/your-username/Object-Detection.git
+git clone https://github.com/sudhakargovindasamy/Object-Detection-using-YOLO-Streamlit
 cd Object-Detection
 ```
 

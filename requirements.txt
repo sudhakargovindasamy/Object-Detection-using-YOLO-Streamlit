@@ -1,7 +1,10 @@
+# Reference requirements for the original Streamlit app
+# For production, use backend/requirements.txt and frontend/package.json
+
 numpy
 opencv-python-headless
 pandas
 pillow
 requests
-streamlit
-ultralytics
+streamlit==1.38.0
+ultralytics==8.3.0

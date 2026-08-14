@@ -1,131 +1,247 @@
-# 🧿 Object Detection using YOLO + Streamlit
+# ��� Object Detection using YOLO + Next.js + FastAPI
 
-This project demonstrates **real-time object detection** using the **YOLO model** integrated with **Streamlit** for an interactive web interface.  
-The app allows users to upload images/videos, run object detection, and visualize results directly in the browser.
-
----
-
-## 📂 Project Structure
-```
-Object-Detection/
-│── Object_Detection.ipynb    → Main Jupyter Notebook with full code
-│── requirements.txt          → Python dependencies
-│── README.md                 → Project documentation
-│── assets/                   → (Optional) Folder for sample images/videos
-```
+This project demonstrates **real-time object detection** using the **YOLOv8 model** with a modern **Next.js frontend** deployed on **Vercel** and a **FastAPI backend** for ML inference.
 
 ---
 
-## ⚙️ Technologies Used
-- Python 3  
-- Streamlit  
-- OpenCV  
-- Ultralytics YOLO   
-- Ngrok (for deployment)  
+## ������ Architecture
+
+```
+��─────────────────��     ��─────────────────��
+│   Vercel        │     │   Render /      │
+│   (Frontend)    │────��│   Railway /     │
+│   Next.js 14    │     │   Fly.io        │
+│                 │     │   FastAPI       │
+��─────────────────��     └─────────────────��
+                              │
+                              ��
+                        ��─────────────────��
+                        │   Ultralytics   │
+                        │   YOLOv8        │
+                        │   (Auto-download)│
+                        └─────────────────��
+```
+
+### Why this architecture?
+
+- **Vercel** excels at hosting static/frontend applications (Next.js) but cannot run long-running Python processes
+- **Streamlit** requires a persistent Python server, which Vercel's serverless functions cannot provide
+- **FastAPI** on Render/Railway/Fly.io provides a proper Python backend for ML inference
+- **YOLO models** are downloaded automatically by Ultralytics on first run (no need to bundle)
 
 ---
 
-## 📦 Requirements
+## ��� Project Structure
 
-Create a `requirements.txt` file with the following dependencies:
 ```
-numpy
-opencv-python
-pandas
-pillow
-requests
-streamlit
-ultralytics
+Object-Detection-using-YOLO-Streamlit/
+├── frontend/                 # Next.js 14 frontend (Vercel)
+│   ├── app/                  # App Router pages
+│   ├── components/           # React components
+│   ├── public/               # Static assets
+│   ├── package.json
+│   ├── next.config.js
+│   ├── tsconfig.json
+│   ├── vercel.json
+│   └── .env.example
+├── backend/                  # FastAPI backend (Render/Railway/Fly.io)
+│   ├── main.py               # FastAPI application
+│   ├── requirements.txt
+│   └── Dockerfile
+├── Object_Detection.ipynb    # Original notebook (reference)
+├── app_streamlit.py          # Original Streamlit app (reference)
+├── requirements.txt          # Python dependencies (reference)
+├── .gitignore
+├── .env.example
+��── DEPLOYMENT.md
 ```
 
-Install them using:
+---
+
+## ������ Technologies Used
+
+### Frontend (Vercel)
+- Next.js 14 (App Router)
+- React 18
+- TypeScript
+- Tailwind-like CSS (custom)
+
+### Backend (Render/Railway/Fly.io)
+- FastAPI 0.109
+- Uvicorn
+- Ultralytics YOLOv8
+- OpenCV
+- PyTorch (via ultralytics)
+
+---
+
+## ��� Requirements
+
+### Frontend
 ```bash
+cd frontend
+npm install
+```
+
+### Backend
+```bash
+cd backend
 pip install -r requirements.txt
 ```
 
 ---
 
-## 🚀 How to Run the Project
+## ��� Local Development
 
-1. **Clone this repository**
+### 1. Start Backend (Terminal 1)
 ```bash
-git clone https://github.com/sudhakargovindasamy/Object-Detection-using-YOLO-Streamlit
-cd Object-Detection
-```
-
-2. **Install dependencies**
-```bash
+cd backend
 pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
 
-3. **Run Streamlit App**
+### 2. Start Frontend (Terminal 2)
 ```bash
-streamlit run Object_Detection.ipynb
+cd frontend
+npm install
+npm run dev
 ```
 
-The app will open locally at:
-```
-http://localhost:8501
-```
+### 3. Open http://localhost:3000
+
+The frontend will proxy API requests to `http://localhost:8000`.
 
 ---
 
-## 🌍 Hosting with Ngrok
+## ��� Deployment
 
-1. Create a free Ngrok account: [https://ngrok.com/](https://ngrok.com/)  
-2. Sign up and copy your Auth Token  
-3. Authenticate Ngrok:
+### Backend Deployment (Required First)
+
+#### Option A: Render (Free Tier)
+1. Connect GitHub repo to Render
+2. Create new **Web Service**
+3. Settings:
+   - **Root Directory**: `backend`
+   - **Runtime**: Docker (uses `backend/Dockerfile`)
+   - **Instance Type**: Free
+4. Deploy!
+5. Copy the service URL (e.g., `https://yolo-backend.onrender.com`)
+
+#### Option B: Railway
+1. Connect GitHub repo to Railway
+2. Add service from `backend/` directory
+3. Uses `Dockerfile` automatically
+4. Copy the service URL
+
+#### Option C: Fly.io
 ```bash
-ngrok config add-authtoken YOUR_TOKEN_HERE
+cd backend
+fly launch
+fly deploy
 ```
-4. Run your Streamlit app with Ngrok:
+
+### Frontend Deployment (Vercel)
+
+1. Go to [Vercel](https://vercel.com)
+2. Import the GitHub repository
+3. Configure:
+   - **Framework Preset**: Next.js
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.next`
+4. Add Environment Variable:
+   - `NEXT_PUBLIC_API_URL` = Your backend URL (e.g., `https://yolo-backend.onrender.com`)
+5. Deploy!
+
+---
+
+## ��� Environment Variables
+
+### Backend (Render/Railway/Fly.io)
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PORT` | Auto | 8000 | Server port |
+
+### Frontend (Vercel)
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `NEXT_PUBLIC_API_URL` | **Yes** | - | Backend API URL |
+
+### .env.example (Frontend)
 ```bash
-ngrok http 8501
-```
-5. Copy the public URL generated by Ngrok and share it.
-
----
-
-## 🎨 Changing Background Image
-
-1. Search Google for “free image hosting site” (e.g., ImgBB or Postimages)  
-2. Upload your desired image  
-3. Open the image in a new tab → Copy the direct image URL  
-4. Replace the URL in your code:
-```python
-background_url = "https://your-uploaded-image-link.com/image.png"
+NEXT_PUBLIC_API_URL=https://your-backend.onrender.com
 ```
 
 ---
 
-## 📊 Sample Output
+## ��� Features
 
-- Detect objects in uploaded images  
-- Run YOLO detection on uploaded videos  
-- Customize UI background  
-
----
-
-## ✅ Results
-
-- Successful detection of objects in real-time  
-- YOLO provides fast and accurate predictions  
-- Easy-to-use interface powered by Streamlit  
+��� **Image Upload & Detection** - Drag & drop or click to upload images
+��� **Real-time Bounding Boxes** - Visual annotations on detected objects
+��� **Confidence Scores** - Visual confidence bars for each detection
+��� **Multiple YOLO Models** - Nano, Small, Medium, Large, XLarge
+��� **Adjustable Parameters** - Confidence threshold, image size
+��� **Video Processing** - Upload and process videos (backend only)
+��� **Responsive UI** - Works on desktop and mobile
+��� **Error Handling** - User-friendly error messages
+��� **Loading States** - Visual feedback during processing
 
 ---
 
-## 🔮 Future Work
+## ��� API Endpoints
 
-- Extend to live camera feed detection  
-- Deploy on Streamlit Cloud or Hugging Face Spaces  
-- Add options for model selection (YOLOv8 variants)  
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | API info |
+| `/health` | GET | Health check |
+| `/models` | GET | List available models |
+| `/detect/image` | POST | Detect objects in image |
+| `/detect/video` | POST | Detect objects in video |
+| `/files/{filename}` | GET | Serve temporary files |
+| `/cleanup` | POST | Clean up temp files |
 
 ---
 
-## 👨‍💻 Author
+## ������ Limitations
 
-**Sudhakar Govindasamy**  
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Image Detection | �� Full Support | Works on Vercel + Backend |
+| Video Detection | ������ Backend Only | Long processing time; not suitable for Vercel functions |
+| Custom .pt Models | �� Supported | Upload via API (multipart/form-data) |
+| Real-time Webcam | ��� Not Supported | Requires WebSocket/Streaming |
+| GPU Acceleration | ������ Backend Only | Requires GPU-enabled backend (not free tier) |
 
-💻 GitHub: [sudhakargovindasamy](https://github.com/sudhakargovindasamy)  
-🔗 LinkedIn: [Sudhakar](https://www.linkedin.com/in/sudhakargovindasamy)
+---
 
+## ��� Testing
+
+### Test Image Detection
+```bash
+curl -X POST http://localhost:8000/detect/image \
+  -F "file=@test.jpg" \
+  -F "model=yolov8n.pt" \
+  -F "conf=0.25"
+```
+
+### Test Video Detection
+```bash
+curl -X POST http://localhost:8000/detect/video \
+  -F "file=@test.mp4" \
+  -F "model=yolov8n.pt"
+```
+
+---
+
+## ��� License
+
+MIT License - feel free to use for personal or commercial projects.
+
+---
+
+## ���‍���� Author
+
+**Sudhakar Govindasamy**
+
+���� GitHub: [sudhakargovindasamy](https://github.com/sudhakargovindasamy)  
+���� LinkedIn: [Sudhakar](https://www.linkedin.com/in/sudhakargovindasamy)
